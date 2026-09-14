@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+install -d -o hermes -g hermes -m 0755 /var/lib/hermes/news /var/lib/hermes/news/output
+if [ ! -e /var/lib/hermes/news/config.json ]; then
+  install -o hermes -g hermes -m 0644 /opt/news/app/config.json /var/lib/hermes/news/config.json
+fi

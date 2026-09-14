@@ -1,0 +1,7 @@
+plow-credentials
+.env
+__pycache__/
+*.py[cod]
+*.pdf
+*.epub
+*.zip

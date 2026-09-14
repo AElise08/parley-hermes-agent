@@ -1,0 +1,9 @@
+#!/bin/sh
+set -eu
+HERMES_HOME=${HERMES_HOME:-/var/lib/hermes}
+CONFIG=${1:-$HERMES_HOME/news/config.json}
+STAMP=$(date +%Y-%m-%d)
+PDF=${2:-$HERMES_HOME/news/output/news-$STAMP.pdf}
+EPUB=${3:-${PDF%.pdf}.epub}
+mkdir -p "$(dirname "$PDF")" "$(dirname "$EPUB")"
+exec /opt/hermes/.venv/bin/python3 /opt/news/app/odiario.py "$CONFIG" "$PDF" "$EPUB"

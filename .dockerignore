@@ -1,0 +1,9 @@
+.git
+.github
+__pycache__
+*.py[cod]
+*.pdf
+*.epub
+*.zip
+plow-credentials
+.env
