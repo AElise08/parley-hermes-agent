@@ -40,4 +40,5 @@ RUN set -eu; \
     chmod 0644 /opt/plow/agent-index-client.py
 
 COPY image/s6-overlay/ /etc/s6-overlay/
-COPY --chmod=0755 image/cont-init.d/20-parley-seed /etc/cont-init.d/20-parley-seed
+COPY image/cont-init.d/20-parley-seed /etc/cont-init.d/20-parley-seed
+RUN chmod 0755 /etc/cont-init.d/20-parley-seed
