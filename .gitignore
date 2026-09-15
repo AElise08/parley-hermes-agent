@@ -1,7 +1,7 @@
-plow-credentials
 .env
 __pycache__/
-*.py[cod]
-*.pdf
-*.epub
-*.zip
+.pytest_cache/
+**/__pycache__/
+**/*.py[co]
+compose.override.yml
+plow-credentials

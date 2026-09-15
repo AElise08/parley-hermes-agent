@@ -1,0 +1,37 @@
+#!/command/with-contenv sh
+# Seed the agent's home with Parley scripts and a plow.env the hermes uid can
+# read. s6 writes PLOW_* as 0600 root; send_chat.py runs as uid 10000.
+set -eu
+
+HOME=/var/lib/hermes
+install -d -o 10000 -g 10000 -m 0755 "$HOME/scripts"
+cp -a /opt/parley/scripts/. "$HOME/scripts/"
+chown -R 10000:10000 "$HOME/scripts"
+chmod 0755 "$HOME/scripts"/*.py 2>/dev/null || true
+
+install -d -o 10000 -g 10000 -m 0700 "$HOME/.parley"
+
+if [ -d "$HOME/.agent-index" ]; then
+  chown -R 10000:10000 "$HOME/.agent-index"
+fi
+if [ -f "$HOME/.agent-index-state.json" ]; then
+  chown 10000:10000 "$HOME/.agent-index-state.json"
+  chmod 0600 "$HOME/.agent-index-state.json"
+fi
+
+if [ ! -s "$HOME/.parley/plow.env" ]; then
+  {
+    printf 'PLOW_API_BASE=%s\n' "$(cat /run/s6/container_environment/PLOW_API_BASE 2>/dev/null || true)"
+    printf 'PLOW_AGENT_TOKEN=%s\n' "$(cat /run/s6/container_environment/PLOW_AGENT_TOKEN 2>/dev/null || true)"
+  } > "$HOME/.parley/plow.env"
+  chown 10000:10000 "$HOME/.parley/plow.env"
+  chmod 0600 "$HOME/.parley/plow.env"
+fi
+
+for f in tutor-profile.json tutor-settings.json; do
+  if [ ! -f "$HOME/$f" ] && [ -f "/opt/parley/templates/$f" ]; then
+    cp "/opt/parley/templates/$f" "$HOME/$f"
+    chown 10000:10000 "$HOME/$f"
+    chmod 0644 "$HOME/$f"
+  fi
+done

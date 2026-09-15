@@ -1,6 +1,8 @@
 services:
   agent:
     build: .
+    environment:
+      AGENT_ID: ${AGENT_ID:-parley}
     volumes:
       - ./plow-credentials:/var/lib/plow/credentials.host:ro
       - agent-home:/var/lib/hermes

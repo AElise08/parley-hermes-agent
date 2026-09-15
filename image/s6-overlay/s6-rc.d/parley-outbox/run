@@ -1,0 +1,27 @@
+#!/bin/sh
+# Drain the Parley outbox every five minutes, including the daily practice
+# nudge.
+#
+# Hermes cron matches in UTC, not the container TZ, so the daily send lives
+# here: drain() itself checks 18:00–18:09 local time.
+#
+# /opt/parley, never $HERMES_HOME/scripts. The home copy belongs to uid 10000
+# in a running container; scheduling it would run whatever a turn last wrote.
+set -eu
+
+PATH=/command:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin
+export PATH
+
+TZ=$(cat /run/s6/container_environment/TZ 2>/dev/null || true)
+[ -n "$TZ" ] || TZ=UTC
+export TZ
+export HERMES_HOME=/var/lib/hermes
+export PYTHONPATH=/opt/parley/scripts
+
+while :; do
+  /command/s6-setuidgid hermes \
+    env HOME="$HERMES_HOME" HERMES_HOME="$HERMES_HOME" TZ="$TZ" PYTHONPATH="$PYTHONPATH" \
+    /opt/hermes/.venv/bin/python3 /opt/parley/scripts/outbox.py drain \
+    || echo "parley-outbox: drain exited non-zero; retrying at the next tick" >&2
+  /bin/sleep 300
+done

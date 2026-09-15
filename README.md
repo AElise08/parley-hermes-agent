@@ -1,91 +1,121 @@
-# The News
+# Parley
 
-A Plow Hermes agent that turns live public feeds into a quiet, designed daily
-newspaper. Each run produces both a print-ready PDF and a reflowable EPUB for
-Kindle or other readers.
+Text it in the language you're learning. Parley texts back — as a conversation
+partner first, then with a few gentle corrections — and keeps your own mistakes
+on a spaced-review ladder so yesterday's error comes back as next week's
+question. Once a day it starts a conversation you can answer in two sentences.
 
-The default edition includes Portuguese and English news, science and tech,
-positive stories, weather, study cards, a word search, and a comic. Its JSON
-configuration controls sources, location, sections, study material, and topic
-filters without changing the generator.
+Language tutors are built on WhatsApp by the dozen. Parley lives where your
+messages already are: your Plow Chat line, over iMessage or SMS.
 
-## What makes it a Hermes agent
+First question, in the language you wrote in:
 
-- Built on the official `plow-pbc/plow-hermes-agent` base image
-- Runs through the base image's supervised Hermes gateway and Plow Chat channel
-- Ships a Hermes skill that knows how to generate and customize the paper
-- Keeps config, outputs, sessions, and reporting identity in the Hermes volume
-- Bakes in the official standard-library Agent Index client
-- Reports Hermes token totals from `$HERMES_HOME/state.db` every five minutes
-  after an Agent Index id is configured
+**Quer praticar qual idioma?**
 
-No credential is stored in the image or repository.
+## Use cases
 
-## Quick start
+- **Practice by texting.** Chat in the language you're learning. Parley
+  replies at your level, then corrects at most three things — what you wrote,
+  the better version, one line of why. Every correction is logged, shown or
+  not.
+- **One question a day.** Every day at your local practice hour it texts a
+  starter on your topics — answer it in two sentences and you're practicing.
+  A due mistake rides along as a quick review.
+- **Your mistakes, reviewed.** Review asks how you'd say your own past errors
+  better. Right answers climb 1, 3, 7, 14, 30 days until they graduate; wrong
+  ones come back tomorrow.
+- **A level that moves.** CEFR A1–C2, set from a placement chat and adjusted
+  on evidence from your sessions — never silently.
 
-See [docs/INSTALL.md](docs/INSTALL.md) for the full tutorial.
+## Install
 
-```bash
+You need Git, Docker Compose, and **Python 3.10+** (the helper scripts use
+3.10 syntax; the agent itself runs inside Docker).
+
+```sh
+git clone https://github.com/plow-pbc/plow-agents.git
+export PATH="$PWD/plow-agents/bin:$PATH"
+
 git clone https://github.com/AElise08/news-hermes-agent.git
 cd news-hermes-agent
-plow-agents login --new-line   # first setup only
-plow-agents mint <line-uid>
+
+plow-agents login                 # text the printed “Plow Activate: …” code
+plow-agents lines                 # pick a line whose STATUS is free
+plow-agents mint ln_xxx           # writes ./plow-credentials — do this before the first up
 docker compose up --build -d
+docker compose logs -f agent      # wait for: plow-init: configured ... as cht_
 ```
 
-Then ask in Plow Chat: `Make today's edition.`
+If you have no assistant line yet: `plow-agents login --new-line`, then `lines`
+and `mint`.
 
-Manual generation:
+`plow-credentials` and `.env` are gitignored. Do not commit them.
 
-```bash
-docker compose exec agent /opt/news/bin/generate-news
+## How to use it
+
+Text the line you minted.
+
+1. **Pick your pair** (first messages). Parley asks which language you want
+   to practice and your rough level. It sets up a local profile on this
+   machine — languages, goal, your interest topics, level history. No Notion,
+   no external account.
+2. **Practice.** Text in the target language. Parley replies as a partner,
+   then corrects a little. Explanations come in your native language; practice
+   stays in the target one.
+3. **Review.** Say "review" or answer the daily nudge's review item. Grade by
+   answering; Parley schedules the next round.
+4. **Daily nudge** (default 18:00 in your timezone, UTC until you set one):
+   one starter, one due mistake, your streak.
+
+Set timezone in `tutor-settings.json` (`timezone`, IANA name) or with `TZ` in
+`compose.override.yml`. The JSON value wins if both are set. Practice hour is
+`practice_hour` in the same file, or `PARLEY_PRACTICE_HOUR` in the override.
+Scaffolding language follows your native language (`locale`, or
+`PARLEY_LOCALE`).
+
+```sh
+docker compose down          # stop, keep memory
+docker compose down -v       # wipe local memory (new setup)
+plow-agents revoke           # retire the line in plow-credentials
 ```
 
-## Agent Index reporting
+Your profile, sessions, and mistakes log live in the agent home volume
+(`tutor-profile.json`, `.parley/`). Only on this install; `down -v` wipes them.
 
-The image contains the official client from:
-https://github.com/plow-pbc/agent-index-client
+## Usage reporting
 
-It reads Hermes usage from `/var/lib/hermes/state.db`. The supervised service
-stands down while `AGENT_ID` is absent. Register the public page first using the
-commands in [PUBLISHING.md](PUBLISHING.md), then add `AGENT_ID=news` to
-`plow-credentials` and restart. The report client sends day-by-model token
-counts, not prompts or task text.
+This image reports token usage to the [Agent Index](https://aiworthusing.com/agent-index)
+once an hour: day × model counts, nothing else. The listing page (name, repo,
+video) is **not** published by this boot — that is a separate step.
 
-## Project layout
+`AGENT_ID` defaults to `parley`.
 
-```text
-app/                         Newspaper generator, config, and font
-bin/generate-news            Stable command used by the Hermes skill
-runtime/persona.md           Agent-specific identity
-news/SKILL.md       Hermes behavior and operating instructions
-image/                       First-boot seed and supervised reporter
-vendor/agent_index_client.py Official pinned Agent Index client
-compose.yml                  Local Docker Compose deployment
-docs/INSTALL.md              Step-by-step install tutorial
+## Tests
+
+```sh
+python3 -m unittest discover -s tests -q
 ```
-
-## Development checks
-
-```bash
-python3 -m py_compile app/odiario.py
-python3 -m json.tool app/config.json >/dev/null
-python3 vendor/agent_index_client.py --self-check
-python3 -m unittest discover -s tests -v
-docker compose config -q
-docker build -t news-hermes-agent .
-```
-
-A generation run fetches live feeds and therefore needs outbound network access.
-
-## Privacy and safety
-
-Feed and article content is treated as untrusted data. The bundled skill does
-not execute instructions found in fetched content. Plow credentials are mounted
-at run time and excluded from Git and Docker build context.
 
 ## License
 
-The repository's original code is MIT licensed. Bodoni Moda is under the SIL
-Open Font License 1.1. The Agent Index client and base image retain their own
-licenses. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+MIT. See [LICENSE](LICENSE). Built on the same architecture as
+[Saved](https://github.com/AElise08/saved-hermes-agent) (MIT).
+
+## Voice (optional, recommended)
+
+Parley can answer voice memos in kind: your memo is transcribed locally
+(faster-whisper, per-audio language auto-detect — never pin a language) and
+the reply carries a synthesized voice note that renders as a native iMessage
+voice bubble (AAC/m4a). `scripts/tts_bilingual.py` picks the voice by the
+reply's dominant language — `pt-BR-FranciscaNeural` for Portuguese,
+`en-US-AriaNeural` for English — so a Portuguese explanation with an embedded
+English practice phrase sounds right. Voices are one-line changes at the top
+of the script.
+
+Setup (once, after the first boot): copy `scripts/tts_bilingual.py` to
+`/var/lib/hermes/scripts/`, then run `patches/apply-live-patches.py` — it
+prints the exact `config.yaml` block (STT auto-detect + whisper small,
+`voice.auto_tts`, the bilingual TTS provider) and suppresses the gateway's
+restart broadcast into the chat. On sandboxes where `/tmp` is outside
+`HERMES_WRITE_SAFE_ROOT`, also export `TMPDIR=/var/lib/hermes/tmp` in the
+gateway environment, or voice-note generation is silently denied.
