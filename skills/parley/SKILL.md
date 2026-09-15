@@ -1,6 +1,6 @@
 ---
 name: parley
-description: "Your language tutor over chat: daily practice, gentle corrections, spaced review of your own mistakes."
+description: "Language tutor over iMessage/SMS: text your Plow line to practice, get gentle corrections, daily nudges, and spaced review of your own mistakes."
 version: 1.0.0
 license: MIT
 platforms: [linux]

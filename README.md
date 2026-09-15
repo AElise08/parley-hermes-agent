@@ -1,31 +1,61 @@
 # Parley
 
-Text it in the language you're learning. Parley texts back — as a conversation
-partner first, then with a few gentle corrections — and keeps your own mistakes
-on a spaced-review ladder so yesterday's error comes back as next week's
-question. Once a day it starts a conversation you can answer in two sentences.
+**A language tutor that lives in your iMessage thread.**
 
-Language tutors are built on WhatsApp by the dozen. Parley lives where your
-messages already are: your Plow Chat line, over iMessage or SMS.
+Install Parley, mint a Plow Chat line, and you get a phone number. Text it
+from your iPhone like you'd text a friend — over **iMessage or SMS**. No app to
+open, no browser tab, no Duolingo streak screen. The lesson is the
+conversation.
+
+Parley asks which language you want to practice, sets your level, and from then
+on **every message you send is practice**. You write in the language you're
+learning; Parley replies in-thread as a conversation partner, then shows a few
+gentle corrections. Your mistakes are logged and come back on a spaced-review
+schedule — yesterday's error becomes next week's question. Once a day, at your
+practice hour, your phone buzzes with a starter you can answer in two
+sentences.
 
 First question, in the language you wrote in:
 
 **Quer praticar qual idioma?**
 
+## What a session looks like (iMessage)
+
+```
+You:    Yesterday I go to the market and buy some fruits.
+Parley: Good topic! Small fixes:
+        • "go" → went (past tense)
+        • "buy" → bought
+        Better: Yesterday I went to the market and bought some fruits.
+        What did you pick up?
+You:    I bought apples and bananas.
+Parley: Perfect tense. 🍎 One note: "some fruits" → "some fruit" (uncountable).
+        ...
+```
+
+You never leave Messages. Explanations can come in your native language;
+practice stays in the target language. Optional: send a voice memo, get a voice
+reply back as a native iMessage voice bubble.
+
 ## Use cases
 
-- **Practice by texting.** Chat in the language you're learning. Parley
-  replies at your level, then corrects at most three things — what you wrote,
-  the better version, one line of why. Every correction is logged, shown or
-  not.
-- **One question a day.** Every day at your local practice hour it texts a
-  starter on your topics — answer it in two sentences and you're practicing.
-  A due mistake rides along as a quick review.
-- **Your mistakes, reviewed.** Review asks how you'd say your own past errors
-  better. Right answers climb 1, 3, 7, 14, 30 days until they graduate; wrong
-  ones come back tomorrow.
-- **A level that moves.** CEFR A1–C2, set from a placement chat and adjusted
-  on evidence from your sessions — never silently.
+- **Practice by texting on iMessage.** Open Messages, text your Plow line in
+  the language you're learning. Parley replies at your CEFR level, on your
+  topics (work, travel, faith — whatever you set). After each exchange it
+  corrects at most three things: what you wrote, the better version, one line
+  of why. Every correction is logged for review, whether or not it all fits on
+  screen.
+- **A daily nudge on your phone.** At your local practice hour (default 18:00),
+  Parley texts you first — a starter question on your topics. Reply in two
+  sentences from the couch, the bus, anywhere you already text. If a past
+  mistake is due, it rides along as a quick review.
+- **Your mistakes, reviewed in chat.** Text "review" or answer the nudge's
+  review item. Parley asks how you'd say *your own* past error better — not
+  generic drills. Right answers climb 1 → 3 → 7 → 14 → 30 days until they
+  graduate; wrong ones come back tomorrow.
+- **A level that moves with you.** CEFR A1–C2, set in a short placement chat
+  over iMessage and adjusted when your sessions show real progress — never
+  silently.
 
 ## Install
 
@@ -53,19 +83,20 @@ and `mint`.
 
 ## How to use it
 
-Text the line you minted.
+After `plow-agents mint`, open **Messages** on your iPhone and text the number
+on that line. That thread is your classroom.
 
-1. **Pick your pair** (first messages). Parley asks which language you want
-   to practice and your rough level. It sets up a local profile on this
-   machine — languages, goal, your interest topics, level history. No Notion,
-   no external account.
-2. **Practice.** Text in the target language. Parley replies as a partner,
-   then corrects a little. Explanations come in your native language; practice
-   stays in the target one.
-3. **Review.** Say "review" or answer the daily nudge's review item. Grade by
-   answering; Parley schedules the next round.
+1. **Setup (first texts).** Parley asks which language to practice and your
+   rough level — all in iMessage. It saves a local profile on this machine
+   (languages, goal, topics, level history). No Notion, no separate login.
+2. **Practice (any time).** Send a message in the target language — about your
+   day, a question, anything. Parley partners, then corrects. Keep the thread
+   going like a chat with a tutor who texts back.
+3. **Review (when you want).** Text `review` or answer the review line in the
+   daily nudge. Parley quizzes you on your logged mistakes; your answer sets
+   the next review date.
 4. **Daily nudge** (default 18:00 in your timezone, UTC until you set one):
-   one starter, one due mistake, your streak.
+   Parley texts *you* first — one starter, one due mistake, your streak.
 
 Set timezone in `tutor-settings.json` (`timezone`, IANA name) or with `TZ` in
 `compose.override.yml`. The JSON value wins if both are set. Practice hour is
