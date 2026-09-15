@@ -36,8 +36,8 @@ You need Git, Docker Compose, and **Python 3.10+** (the helper scripts use
 git clone https://github.com/plow-pbc/plow-agents.git
 export PATH="$PWD/plow-agents/bin:$PATH"
 
-git clone https://github.com/AElise08/news-hermes-agent.git
-cd news-hermes-agent
+git clone https://github.com/AElise08/parley-hermes-agent.git
+cd parley-hermes-agent
 
 plow-agents login                 # text the printed “Plow Activate: …” code
 plow-agents lines                 # pick a line whose STATUS is free
