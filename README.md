@@ -138,10 +138,13 @@ Parley can answer voice memos in kind: your memo is transcribed locally
 (faster-whisper, per-audio language auto-detect — never pin a language) and
 the reply carries a synthesized voice note that renders as a native iMessage
 voice bubble (AAC/m4a). `scripts/tts_bilingual.py` picks the voice by the
-reply's dominant language — `pt-BR-FranciscaNeural` for Portuguese,
-`en-US-AriaNeural` for English — so a Portuguese explanation with an embedded
-English practice phrase sounds right. Voices are one-line changes at the top
-of the script.
+language being practiced — the profile's `target_language` — not by whichever
+language dominates the reply: `pt-BR-ThalitaMultilingualNeural` for Portuguese,
+`en-US-AvaMultilingualNeural` for English. Both are Microsoft *multilingual*
+neural voices, so the other language's phrases are read with native
+pronunciation and a Portuguese reply never comes out in an English accent just
+because the surrounding explanation is in English. Voices are one-line changes
+at the top of the script.
 
 Setup (once, after the first boot): copy `scripts/tts_bilingual.py` to
 `/var/lib/hermes/scripts/`, then run `patches/apply-live-patches.py` — it

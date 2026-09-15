@@ -1,17 +1,33 @@
 #!/usr/bin/env python3
-"""Parley bilingual TTS: pick the edge-tts voice by dominant reply language.
+"""Parley bilingual TTS: speak the language being practiced in its own voice.
 
 Usage: tts_bilingual.py <input_text_path> <output_audio_path>
-PT-dominant -> pt-BR-ThalitaMultilingualNeural (handles embedded EN phrases)
-EN-dominant -> en-US-AriaNeural
+
+The voice is chosen by the profile's ``target_language`` (the language the
+owner is learning), not by whichever language dominates the reply text: a
+tutor's Portuguese must sound Portuguese even when the surrounding
+explanation is English, and vice versa. Both voices are Microsoft
+*Multilingual* neural voices, which read the other language's phrases with
+native pronunciation, so one voice covers a mixed reply correctly.
+
+pt -> pt-BR-ThalitaMultilingualNeural (native PT, embedded EN kept native)
+en -> en-US-AvaMultilingualNeural    (native EN, embedded PT kept native)
+
+Falls back to the dominant reply language when the profile names a language
+without a configured voice.
 """
+import json
+import os
 import re
 import sys
 
 sys.path.insert(0, "/opt/data/lazy-packages")
 
-PT_VOICE = "pt-BR-FranciscaNeural"
-EN_VOICE = "en-US-AriaNeural"
+PROFILE = os.environ.get("PARLEY_PROFILE", "/var/lib/hermes/tutor-profile.json")
+VOICES = {
+    "pt": "pt-BR-ThalitaMultilingualNeural",
+    "en": "en-US-AvaMultilingualNeural",
+}
 
 PT_WORDS = re.compile(
     r"\b(voc[eê]|obrigad[ao]|est[áa]|tudo|qual|nome|prazer|ol[áa]|como|bem|"
@@ -29,6 +45,22 @@ def dominant_language(text: str) -> str:
     return "pt" if pt >= en else "en"
 
 
+def target_language() -> str:
+    try:
+        with open(PROFILE, encoding="utf-8") as handle:
+            return str(json.load(handle).get("target_language") or "").strip().lower()
+    except (OSError, ValueError):
+        return ""
+
+
+def choose_voice(text: str) -> tuple[str, str]:
+    target = target_language()
+    if target in VOICES:
+        return VOICES[target], target
+    lang = dominant_language(text)
+    return VOICES.get(lang, VOICES["en"]), lang
+
+
 def clean(text: str) -> str:
     text = re.sub(r"[*_`#]", "", text)
     return text.strip()
@@ -39,28 +71,32 @@ def main() -> int:
     text = clean(raw)
     if not text:
         return 1
-    lang = dominant_language(text)
-    voice = PT_VOICE if lang == "pt" else EN_VOICE
+    voice, lang = choose_voice(text)
     import asyncio
     import subprocess
     import tempfile
     import edge_tts
 
     out = sys.argv[2]
-    target = out if out.lower().endswith(".mp3") else out + ".src.mp3"
 
-    async def synth():
-        await edge_tts.Communicate(text, voice).save(target)
+    async def synth(path: str) -> None:
+        await edge_tts.Communicate(text, voice).save(path)
 
-    asyncio.run(synth())
-    if target != out:
-        # iMessage renders audio/mp4 (.m4a, AAC) as a native voice-memo
-        # bubble; transcode so the attachment matches that shape.
-        subprocess.run(
-            ["ffmpeg", "-y", "-v", "error", "-i", target,
-             "-c:a", "aac", "-b:a", "64k", "-movflags", "+faststart", out],
-            check=True,
-        )
+    if out.lower().endswith(".mp3"):
+        asyncio.run(synth(out))
+    else:
+        # Edge TTS only emits MP3. Transcode to AAC/m4a — the shape an
+        # iMessage voice memo must have — through a private temp file, so no
+        # stray ``.src.mp3`` is left beside the deliverable.
+        with tempfile.TemporaryDirectory() as tmpdir:
+            source = os.path.join(tmpdir, "tts.mp3")
+            asyncio.run(synth(source))
+            subprocess.run(
+                ["ffmpeg", "-y", "-v", "error", "-i", source,
+                 "-c:a", "aac", "-b:a", "64k", "-ar", "44100",
+                 "-movflags", "+faststart", out],
+                check=True,
+            )
     print(f"voice={voice} lang={lang}", file=sys.stderr)
     return 0
 
