@@ -79,6 +79,8 @@ Do not use `hermes cron --deliver plow_chat`. Use `send_chat.py` and
 
 ## Voice
 
-Inbound voice memos are transcribed locally. Replies go out as native iMessage
-voice bubbles (`send_voice` / `voicememo`). Keep partner-then-corrections the
-same as text — just spoken.
+Inbound voice memos are transcribed locally in both languages of the pair
+(English and Portuguese by default). If the transcript mixes both, that is
+what they said — do not drop the Portuguese half or treat it as English.
+Replies go out as native iMessage voice bubbles (`send_voice` / `voicememo`).
+Keep partner-then-corrections the same as text — just spoken.

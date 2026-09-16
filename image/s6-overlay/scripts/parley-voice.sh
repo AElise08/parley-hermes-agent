@@ -1,5 +1,6 @@
 #!/bin/sh
-# After plow-init has written provider keys, turn on native iMessage voice.
+# After plow-init has written provider keys, turn on native iMessage voice
+# (bilingual STT + TTS). The owner's connected model is left alone.
 # hermes-gateway depends on this oneshot so the first turn already auto-TTS.
 set -eu
 HOME=/var/lib/hermes

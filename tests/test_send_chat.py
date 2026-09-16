@@ -92,10 +92,26 @@ class VoiceConfigTests(unittest.TestCase):
             cfg = voice_config.apply(path)
             self.assertEqual(cfg["stt"]["language"], "")
             self.assertEqual(cfg["stt"]["local"]["model"], "small")
+            self.assertEqual(cfg["stt"]["provider"], "parley-bilingual")
+            self.assertIn("{input_path}", cfg["stt"]["providers"]["parley-bilingual"]["command"])
             self.assertTrue(cfg["voice"]["auto_tts"])
             self.assertEqual(cfg["tts"]["provider"], "parley-bilingual")
             self.assertEqual(cfg["tts"]["providers"]["parley-bilingual"]["output_format"], "m4a")
             self.assertEqual(cfg["model"]["default"], "x")
+            self.assertNotIn("fallback_model", cfg)
+
+    def test_apply_does_not_touch_owner_model_or_fallback(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "config.yaml"
+            path.write_text(
+                "model:\n  provider: openai-codex\n  default: gpt-5\n"
+                "fallback_model:\n  provider: anthropic\n  model: claude-sonnet-4\n"
+            )
+            cfg = voice_config.apply(path)
+            self.assertEqual(cfg["model"]["provider"], "openai-codex")
+            self.assertEqual(cfg["model"]["default"], "gpt-5")
+            self.assertEqual(cfg["fallback_model"]["provider"], "anthropic")
+            self.assertEqual(cfg["fallback_model"]["model"], "claude-sonnet-4")
 
 
 if __name__ == "__main__":

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Seed native iMessage voice: STT auto-detect, auto_tts, bilingual command TTS.
+"""Seed native iMessage voice: bilingual STT, auto_tts, bilingual TTS.
 
-plow-init owns provider keys; this only adds voice/stt/tts and leaves the rest.
-Safe to run on every boot — existing values for language/model/auto_tts win
-unless they are still the silent-English defaults that break Portuguese memos.
+plow-init owns which model the owner connected. This only adds voice/stt/tts
+and leaves provider/model/fallback alone. Safe to run on every boot —
+existing values for language win unless they are still the silent-English
+defaults that drop Portuguese.
 """
 from __future__ import annotations
 
@@ -14,6 +15,10 @@ import yaml
 
 TTS_COMMAND = (
     "/opt/hermes/.venv/bin/python3 /var/lib/hermes/scripts/tts_bilingual.py "
+    "{input_path} {output_path}"
+)
+STT_COMMAND = (
+    "/opt/hermes/.venv/bin/python3 /var/lib/hermes/scripts/stt_bilingual.py "
     "{input_path} {output_path}"
 )
 
@@ -35,8 +40,7 @@ def apply(path: Path | None = None) -> dict:
     if not isinstance(stt, dict):
         stt = {}
         cfg["stt"] = stt
-    # Empty restores per-audio auto-detect. The seeded default "en" silently
-    # decodes Portuguese memos as English.
+    # Empty restores per-audio auto-detect for any leftover local backend.
     if stt.get("language") in (None, "en"):
         stt["language"] = ""
     local = stt.setdefault("local", {})
@@ -44,6 +48,16 @@ def apply(path: Path | None = None) -> dict:
         local = {}
         stt["local"] = local
     local.setdefault("model", "small")
+    stt_providers = stt.setdefault("providers", {})
+    if not isinstance(stt_providers, dict):
+        stt_providers = {}
+        stt["providers"] = stt_providers
+    stt_providers["parley-bilingual"] = {
+        "type": "command",
+        "command": STT_COMMAND,
+        "timeout": 180,
+    }
+    stt["provider"] = "parley-bilingual"
 
     voice = cfg.setdefault("voice", {})
     if not isinstance(voice, dict):
@@ -73,7 +87,7 @@ def apply(path: Path | None = None) -> dict:
 
 def main() -> int:
     apply()
-    print("parley-voice: stt auto-detect, auto_tts, bilingual m4a")
+    print("parley-voice: bilingual stt, auto_tts, bilingual m4a")
     return 0
 
 

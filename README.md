@@ -58,7 +58,8 @@ with a native iMessage voice bubble — same tutoring turn, spoken.
   over iMessage and adjusted when your sessions show real progress — never
   silently.
 - **Practice out loud.** Hold to talk in Messages. Parley transcribes locally
-  (language auto-detect), tutors the same way as text, and answers with a
+  in both languages of your pair (so a memo that switches English ↔ Portuguese
+  keeps both halves), tutors the same way as text, and answers with a
   **native iMessage voice bubble** — not a file attachment.
 
 ## Install
@@ -79,10 +80,44 @@ plow-agents deploy --local --line ln_xxx
 docker compose logs -f agent      # wait for: plow-init: configured ... as cht_
 ```
 
+Copy `.env.example` to `.env` and connect **the model you want** — Codex,
+Gemini, DeepSeek, Claude, or any other provider Hermes already speaks.
+Set `HERMES_PROVIDER`, `HERMES_MODEL`, and that provider's key. Parley does
+not pin a vendor.
+
 If you have no assistant line yet: `plow-agents login --new-line`, then `lines`
 and `mint`.
 
 `plow-credentials` and `.env` are gitignored. Do not commit them.
+
+### Cloud custom image
+
+Plow cloud agents now run a **public custom image** — the first step toward
+one-click deploy on the leaderboard. Follow the same flow as
+[plow-agents](https://github.com/plow-pbc/plow-agents): `plow-agents.toml`
+in this repo already names the image, so you can omit it on the CLI.
+
+```sh
+# classic GitHub PAT with write:packages — fine-grained PATs cannot push GHCR
+docker login ghcr.io -u YOUR_GITHUB_USERNAME
+
+plow-agents image build          # linux/amd64, tag from plow-agents.toml
+plow-agents image push           # prints ghcr.io/…/parley-hermes-agent@sha256:…
+```
+
+After the first push, make the GHCR package **public** (GitHub → Packages);
+otherwise Plow’s anonymous pull fails. Copy the `repository@sha256:…` line,
+then request it on a **free** line:
+
+```sh
+plow-agents deploy ghcr.io/aelise08/parley-hermes-agent@sha256:… --line ln_xxx
+plow-agents agents               # wait until STATUS is running, then text the number
+```
+
+`deploy` without `--local` occupies the line on Plow’s cloud — stop Compose
+on that line first. Credentials stay out of the image (`.dockerignore`
+already drops `plow-credentials` and `.env`). You can also deploy a listing
+with `plow-agents deploy exe:hermes`.
 
 ## How to use it
 
@@ -140,9 +175,11 @@ MIT. See [LICENSE](LICENSE). Built on the same architecture as
 ## Voice (native iMessage)
 
 Voice memos are live. You send a memo; Parley transcribes it locally
-(faster-whisper, per-audio language auto-detect — never pinned to English)
-and replies with a synthesized memo that lands as a **native iMessage voice
-bubble** (AAC/m4a). The live gateway uses Plow's `send_voice` route:
+(`scripts/stt_bilingual.py`: faster-whisper once in English and once in
+Portuguese, then a timestamp merge — a mixed memo keeps both halves instead
+of collapsing to English) and replies with a synthesized memo that lands as
+a **native iMessage voice bubble** (AAC/m4a). The live gateway uses Plow's
+`send_voice` route:
 
 ```
 POST /v1/chats/{chat_uid}/voicememo
@@ -158,8 +195,9 @@ Portuguese, `en-US-AvaMultilingualNeural` for English. Both are Microsoft
 multilingual neural voices, so embedded phrases in the other language keep
 native pronunciation. Voices are one-line changes at the top of the script.
 
-This is baked into the image (STT auto-detect, `voice.auto_tts`, bilingual
-TTS, `TMPDIR` inside the Hermes write root). No live patch for voice.
+This is baked into the image (bilingual STT, `voice.auto_tts`, bilingual
+TTS, `TMPDIR` inside the Hermes write root). The LLM is whatever the owner
+connected. No live patch for voice.
 
 The optional `patches/apply-live-patches.py` only suppresses the gateway's
 "shutting down" broadcast into the chat. Re-apply after a Hermes upgrade.
