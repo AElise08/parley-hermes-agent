@@ -33,39 +33,12 @@ else:
     print("run.py: lifecycle notices set to log-only")
 
 # --- Plow chat voice notes ---------------------------------------------------
-# A voice memo the owner sends arrives on the Plow wire named "Audio Message.m4a"
-# with content_type audio/mp4. A reply synthesized by auto-TTS goes out named
-# tts_reply_<hex>.m4a, and iMessage renders that as a plain audio attachment
-# instead of a voice message. send_voice now mirrors the provider's own naming
-# so the reply lands as a voice bubble.
-PLOW_CHAT = "/opt/hermes/plugins/plow_chat/__init__.py"
-VOICE_OLD = (
-    "    async def send_voice(self, chat_id, audio_path, caption=None, **_kwargs):\n"
-    "        return await self._send_attachment(chat_id, audio_path, caption=caption)\n"
-)
-VOICE_NEW = (
-    "    async def send_voice(self, chat_id, audio_path, caption=None, **_kwargs):\n"
-    "        # A received voice memo arrives named \"Audio Message.m4a\" with\n"
-    "        # content_type audio/mp4; a generic filename/content_type is what\n"
-    "        # renders as a plain audio file on iMessage. Mirror the shape the\n"
-    "        # provider itself uses so the reply lands as a voice message.\n"
-    "        ext = os.path.splitext(audio_path)[1] or \".m4a\"\n"
-    "        return await self._send_attachment(\n"
-    "            chat_id, audio_path, caption=caption,\n"
-    "            filename=f\"Audio Message{ext}\")\n"
-)
-try:
-    src = open(PLOW_CHAT).read()
-except OSError as error:
-    print(f"plow_chat: skipped ({error})")
-else:
-    if 'filename=f"Audio Message{ext}"' in src:
-        print("plow_chat: already patched")
-    elif VOICE_OLD in src:
-        open(PLOW_CHAT, "w").write(src.replace(VOICE_OLD, VOICE_NEW, 1))
-        print("plow_chat: voice notes now send as 'Audio Message.m4a'")
-    else:
-        print("plow_chat: anchor not found - Hermes version changed?")
+# Voice memos are now native via the Plow API:
+#   POST /v1/chats/{chat_uid}/voicememo {"attachmentuid":"att…"}
+# MP3 or M4A, one file, no body text. Hermes send_voice uses this route
+# automatically; the plugin is in the latest agent images rolling out today.
+# The previous Audio Message.m4a filename hack is obsolete.
+print("plow_chat: native voicememo via POST /voicememo (no patch needed)")
 
 print("""
 config.yaml additions (plow-init owns its own keys; these survive restarts):
