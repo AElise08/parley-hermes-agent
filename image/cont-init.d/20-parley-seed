@@ -22,8 +22,8 @@ fi
 
 if [ ! -s "$HOME/.parley/plow.env" ]; then
   {
-    printf 'PLOW_API_BASE=%s\n' "$(cat /run/s6/container_environment/PLOW_API_BASE 2>/dev/null || true)"
-    printf 'PLOW_AGENT_TOKEN=%s\n' "$(cat /run/s6/container_environment/PLOW_AGENT_TOKEN 2>/dev/null || true)"
+    printf '%s=%s\n' PLOW_API_BASE "$(cat /run/s6/container_environment/PLOW_API_BASE 2>/dev/null || true)"
+    printf '%s=%s\n' PLOW_AGENT_TOKEN "$(cat /run/s6/container_environment/PLOW_AGENT_TOKEN 2>/dev/null || true)"
   } > "$HOME/.parley/plow.env"
   chown 10000:10000 "$HOME/.parley/plow.env"
   chmod 0600 "$HOME/.parley/plow.env"

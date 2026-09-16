@@ -1,0 +1,24 @@
+name: image
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  ghcr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build linux/amd64 image
+        run: docker build --platform linux/amd64 --tag ghcr.io/aelise08/parley-hermes-agent:v1 .
+      - name: Push
+        run: docker push ghcr.io/aelise08/parley-hermes-agent:v1
