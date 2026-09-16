@@ -3,8 +3,10 @@ services:
     build: .
     environment:
       AGENT_ID: ${AGENT_ID:-parley}
+    env_file:
+      - path: ./plow-credentials
+        required: true
     volumes:
-      - ./plow-credentials:/var/lib/plow/credentials.host:ro
       - agent-home:/var/lib/hermes
     stop_grace_period: 35s
 

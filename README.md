@@ -8,12 +8,13 @@ open, no browser tab, no Duolingo streak screen. The lesson is the
 conversation.
 
 Parley asks which language you want to practice, sets your level, and from then
-on **every message you send is practice**. You write in the language you're
-learning; Parley replies in-thread as a conversation partner, then shows a few
-gentle corrections. Your mistakes are logged and come back on a spaced-review
-schedule — yesterday's error becomes next week's question. Once a day, at your
-practice hour, your phone buzzes with a starter you can answer in two
-sentences.
+on **every message you send is practice** — typed or a voice memo. You write
+(or speak) in the language you're learning; Parley replies in-thread as a
+conversation partner, then shows a few gentle corrections. Voice memos come
+back as native iMessage voice bubbles. Your mistakes are logged and come back
+on a spaced-review schedule — yesterday's error becomes next week's question.
+Once a day, at your practice hour, your phone buzzes with a starter you can
+answer in two sentences.
 
 First question, in the language you wrote in:
 
@@ -34,8 +35,8 @@ Parley: Perfect tense. 🍎 One note: "some fruits" → "some fruit" (uncountabl
 ```
 
 You never leave Messages. Explanations can come in your native language;
-practice stays in the target language. Optional: send a voice memo, get a voice
-reply back as a native iMessage voice bubble.
+practice stays in the target language. Send a voice memo and Parley answers
+with a native iMessage voice bubble — same tutoring turn, spoken.
 
 ## Use cases
 
@@ -56,6 +57,9 @@ reply back as a native iMessage voice bubble.
 - **A level that moves with you.** CEFR A1–C2, set in a short placement chat
   over iMessage and adjusted when your sessions show real progress — never
   silently.
+- **Practice out loud.** Hold to talk in Messages. Parley transcribes locally
+  (language auto-detect), tutors the same way as text, and answers with a
+  **native iMessage voice bubble** — not a file attachment.
 
 ## Install
 
@@ -71,8 +75,7 @@ cd parley-hermes-agent
 
 plow-agents login                 # text the printed “Plow Activate: …” code
 plow-agents lines                 # pick a line whose STATUS is free
-plow-agents mint ln_xxx           # writes ./plow-credentials — do this before the first up
-docker compose up --build -d
+plow-agents deploy --local --line ln_xxx
 docker compose logs -f agent      # wait for: plow-init: configured ... as cht_
 ```
 
@@ -97,6 +100,8 @@ on that line. That thread is your classroom.
    the next review date.
 4. **Daily nudge** (default 18:00 in your timezone, UTC until you set one):
    Parley texts *you* first — one starter, one due mistake, your streak.
+5. **Voice.** Hold to talk. Parley transcribes, tutors, and replies as a
+   native iMessage voice bubble. Same corrections and review as text.
 
 Set timezone in `tutor-settings.json` (`timezone`, IANA name) or with `TZ` in
 `compose.override.yml`. The JSON value wins if both are set. Practice hour is
@@ -132,24 +137,29 @@ python3 -m unittest discover -s tests -q
 MIT. See [LICENSE](LICENSE). Built on the same architecture as
 [Saved](https://github.com/AElise08/saved-hermes-agent) (MIT).
 
-## Voice (optional, recommended)
+## Voice (native iMessage)
 
-Parley can answer voice memos in kind: your memo is transcribed locally
-(faster-whisper, per-audio language auto-detect — never pin a language) and
-the reply carries a synthesized voice note that renders as a native iMessage
-voice bubble (AAC/m4a). `scripts/tts_bilingual.py` picks the voice by the
-language being practiced — the profile's `target_language` — not by whichever
-language dominates the reply: `pt-BR-ThalitaMultilingualNeural` for Portuguese,
-`en-US-AvaMultilingualNeural` for English. Both are Microsoft *multilingual*
-neural voices, so the other language's phrases are read with native
-pronunciation and a Portuguese reply never comes out in an English accent just
-because the surrounding explanation is in English. Voices are one-line changes
-at the top of the script.
+Voice memos are live. You send a memo; Parley transcribes it locally
+(faster-whisper, per-audio language auto-detect — never pinned to English)
+and replies with a synthesized memo that lands as a **native iMessage voice
+bubble** (AAC/m4a). The live gateway uses Plow's `send_voice` route:
 
-Setup (once, after the first boot): copy `scripts/tts_bilingual.py` to
-`/var/lib/hermes/scripts/`, then run `patches/apply-live-patches.py` — it
-prints the exact `config.yaml` block (STT auto-detect + whisper small,
-`voice.auto_tts`, the bilingual TTS provider) and suppresses the gateway's
-restart broadcast into the chat. On sandboxes where `/tmp` is outside
-`HERMES_WRITE_SAFE_ROOT`, also export `TMPDIR=/var/lib/hermes/tmp` in the
-gateway environment, or voice-note generation is silently denied.
+```
+POST /v1/chats/{chat_uid}/voicememo
+{"attachment_uid": "att…"}
+```
+
+Same declare/upload flow as media, then that POST — MP3 or M4A, one file, no
+body text. Outbox scripts use `send_chat.py --voice file.m4a`.
+
+`scripts/tts_bilingual.py` picks the voice by the language being practiced
+(the profile's `target_language`) — `pt-BR-ThalitaMultilingualNeural` for
+Portuguese, `en-US-AvaMultilingualNeural` for English. Both are Microsoft
+multilingual neural voices, so embedded phrases in the other language keep
+native pronunciation. Voices are one-line changes at the top of the script.
+
+This is baked into the image (STT auto-detect, `voice.auto_tts`, bilingual
+TTS, `TMPDIR` inside the Hermes write root). No live patch for voice.
+
+The optional `patches/apply-live-patches.py` only suppresses the gateway's
+"shutting down" broadcast into the chat. Re-apply after a Hermes upgrade.

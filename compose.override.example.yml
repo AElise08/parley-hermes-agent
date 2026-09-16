@@ -7,7 +7,25 @@
 services:
   agent:
     environment:
+# Copy to compose.override.yml (gitignored) after minting a line.
+# Timezone, practice hour, and locale are owner-specific — do not assume a country.
+#
+# Keep TZ here in sync with tutor-settings.json if you set both. Compose no
+# longer exports a default TZ; Parley's daily nudge uses tutor-settings.json
+# first, then TZ if present.
+services:
+  agent:
+    environment:
       AGENT_ID: parley
+      TMPDIR: /var/lib/hermes/tmp
+      # IANA zone, e.g. America/Belem, Europe/Lisbon, America/New_York
+      # TZ: UTC
+      # PARLEY_PRACTICE_HOUR: 18
+      # PARLEY_LOCALE: pt
+      # Optional. Omit these to use the Plow default model.
+      # HERMES_PROVIDER: deepseek
+      # HERMES_MODEL: deepseek-flash
+      # DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
       # IANA zone, e.g. America/Belem, Europe/Lisbon, America/New_York
       # TZ: UTC
       # PARLEY_PRACTICE_HOUR: 18

@@ -97,8 +97,12 @@ other region. If they want a different practice hour, write `practice_hour`.
 Never use `hermes cron --deliver plow_chat` or `hermes send --to plow_chat`
 from outside the live gateway. Those paths do not text the owner.
 
-- Send now: `send_chat.py`
+- Send now: `send_chat.py` (text) or `send_chat.py --voice file.m4a`
 - Send later: `outbox.py add --at ...` (timestamps in the owner's timezone)
+
+Voice memos you send them are transcribed and answered in kind — a native
+iMessage voice bubble, not a file attachment. Practice still follows the
+pair: they speak the target language, scaffolding can be in the native one.
 
 # Before replying
 

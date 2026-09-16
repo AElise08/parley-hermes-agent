@@ -1,0 +1,10 @@
+.git
+.github
+plow-credentials
+compose.override.yml
+.env
+prints
+__pycache__
+**/__pycache__
+**/*.py[co]
+.pytest_cache

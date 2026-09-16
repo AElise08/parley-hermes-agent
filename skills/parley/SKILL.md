@@ -76,3 +76,9 @@ python3 /var/lib/hermes/scripts/tutor.py error list
 
 Do not use `hermes cron --deliver plow_chat`. Use `send_chat.py` and
 `outbox.py`. See `references/outbound-messages.md`.
+
+## Voice
+
+Inbound voice memos are transcribed locally. Replies go out as native iMessage
+voice bubbles (`send_voice` / `voicememo`). Keep partner-then-corrections the
+same as text — just spoken.

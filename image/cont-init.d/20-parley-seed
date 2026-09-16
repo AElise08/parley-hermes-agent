@@ -10,6 +10,7 @@ chown -R 10000:10000 "$HOME/scripts"
 chmod 0755 "$HOME/scripts"/*.py 2>/dev/null || true
 
 install -d -o 10000 -g 10000 -m 0700 "$HOME/.parley"
+install -d -o 10000 -g 10000 -m 0755 "$HOME/tmp"
 
 if [ -d "$HOME/.agent-index" ]; then
   chown -R 10000:10000 "$HOME/.agent-index"

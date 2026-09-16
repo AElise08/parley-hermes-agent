@@ -3,7 +3,7 @@
 #
 # Pinned by digest, same pattern as plow-pbc/life-assistant-hermes-agent:
 # a moving tag would substitute unreviewed code under a live credential.
-FROM public.ecr.aws/e1h7x4a2/plow-cloud-agents:base-db182f335c727469d7de4eaf25b5d333670b3069@sha256:bb2308bc96acd564b9ea0e9b8b577f19f39d6bb96173f29761f24297817d38ed
+FROM public.ecr.aws/e1h7x4a2/plow-cloud-agents:base-910b8e3ba8980e20faae9f37dcaca0ea9d8bd9ae@sha256:f4739b6e74309dcccd087792949fd613191db7f33d33109c78127684dcb5dd73
 
 COPY runtime/SOUL.md /var/lib/hermes/SOUL.md
 COPY LICENSE NOTICE /usr/share/doc/parley/
@@ -41,4 +41,16 @@ RUN set -eu; \
 
 COPY image/s6-overlay/ /etc/s6-overlay/
 COPY image/cont-init.d/20-parley-seed /etc/cont-init.d/20-parley-seed
-RUN chmod 0755 /etc/cont-init.d/20-parley-seed
+RUN chmod 0755 /etc/cont-init.d/20-parley-seed \
+ && chmod 0755 /etc/s6-overlay/scripts/parley-voice.sh
+
+# Voice memos: bilingual TTS (edge-tts) + a tmp dir inside HERMES_WRITE_SAFE_ROOT.
+# The gateway's send_voice uses POST /v1/chats/{uid}/voicememo (native iMessage).
+ENV TMPDIR=/var/lib/hermes/tmp
+RUN /opt/hermes/.venv/bin/python -c "import edge_tts" \
+ || uv pip install --python /opt/hermes/.venv/bin/python edge-tts
+
+# Gemini 400s the whole turn if one tool has anyOf[string,array] plus sibling
+# items (plow_send_message `to`). Move items onto the array branch.
+COPY patches/gemini_items.py patches/fix_gemini_schema.py /tmp/parley-patches/
+RUN python3 /tmp/parley-patches/fix_gemini_schema.py /opt/hermes/agent/gemini_schema.py
