@@ -57,7 +57,7 @@ except OSError as error:
 else:
     if "/voicememo" in src:
         print("plow_chat: native voicememo via POST /voicememo")
-    elif VOICE_NEW in src:
+    elif 'filename=f"Audio Message{ext}"' in src:
         print("plow_chat: legacy voice fallback already applied")
     elif VOICE_OLD in src:
         open(PLOW_CHAT, "w").write(src.replace(VOICE_OLD, VOICE_NEW, 1))
