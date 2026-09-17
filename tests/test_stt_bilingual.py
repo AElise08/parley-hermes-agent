@@ -46,16 +46,23 @@ class MergeTests(unittest.TestCase):
 
 
 class ProfileLanguageTests(unittest.TestCase):
-    def test_reads_native_and_target_then_fills_defaults(self):
+    def test_reads_native_and_target(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "tutor-profile.json"
             path.write_text(json.dumps({"native_language": "pt", "target_language": "en"}))
             with patch.object(stt_bilingual, "PROFILE", str(path)):
                 self.assertEqual(stt_bilingual.profile_languages(), ("pt", "en"))
 
-    def test_missing_profile_defaults_en_pt(self):
+    def test_missing_profile_is_auto_detect(self):
         with patch.object(stt_bilingual, "PROFILE", "/no/such/profile.json"):
-            self.assertEqual(stt_bilingual.profile_languages(), ("en", "pt"))
+            self.assertEqual(stt_bilingual.profile_languages(), ())
+
+    def test_empty_profile_is_auto_detect(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "tutor-profile.json"
+            path.write_text(json.dumps({"native_language": "", "target_language": ""}))
+            with patch.object(stt_bilingual, "PROFILE", str(path)):
+                self.assertEqual(stt_bilingual.profile_languages(), ())
 
 
 class CliTests(unittest.TestCase):
@@ -70,6 +77,12 @@ class CliTests(unittest.TestCase):
                         code = stt_bilingual.main()
             self.assertEqual(code, 0)
             self.assertEqual(out.read_text(encoding="utf-8").strip(), "Hello olá")
+
+    def test_format_transcript_tags_detected_language(self):
+        self.assertEqual(
+            stt_bilingual.format_transcript("Bonjour", "fr"),
+            "[lang:fr] Bonjour",
+        )
 
 
 if __name__ == "__main__":

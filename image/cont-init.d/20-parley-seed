@@ -30,21 +30,9 @@ if [ ! -s "$HOME/.parley/plow.env" ]; then
 fi
 
 for f in tutor-profile.json tutor-settings.json; do
-  src="/opt/parley/templates/$f"
-  dest="$HOME/$f"
-  [ -f "$src" ] || continue
-  copy=0
-  if [ ! -f "$dest" ]; then
-    copy=1
-  elif [ "$f" = "tutor-profile.json" ]; then
-    # Empty placeholder from an older image: fill the one-click default.
-    if grep -q '"target_language": ""' "$dest" 2>/dev/null; then
-      copy=1
-    fi
-  fi
-  if [ "$copy" = 1 ]; then
-    cp "$src" "$dest"
-    chown 10000:10000 "$dest"
-    chmod 0644 "$dest"
+  if [ ! -f "$HOME/$f" ] && [ -f "/opt/parley/templates/$f" ]; then
+    cp "/opt/parley/templates/$f" "$HOME/$f"
+    chown 10000:10000 "$HOME/$f"
+    chmod 0644 "$HOME/$f"
   fi
 done

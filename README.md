@@ -57,10 +57,10 @@ with a native iMessage voice bubble — same tutoring turn, spoken.
 - **A level that moves with you.** CEFR A1–C2, set in a short placement chat
   over iMessage and adjusted when your sessions show real progress — never
   silently.
-- **Practice out loud.** Hold to talk in Messages. Parley transcribes locally
-  in both languages of your pair (so a memo that switches English ↔ Portuguese
-  keeps both halves), tutors the same way as text, and answers with a
-  **native iMessage voice bubble** — not a file attachment.
+- **Practice out loud.** Hold to talk in Messages. Parley detects the
+  language you spoke, asks which one you want to learn, then transcribes
+  mixed memos in your pair and answers with a **native iMessage voice
+  bubble**.
 
 ## Install
 
@@ -175,11 +175,11 @@ MIT. See [LICENSE](LICENSE). Built on the same architecture as
 ## Voice (native iMessage)
 
 Voice memos are live. You send a memo; Parley transcribes it locally
-(`scripts/stt_bilingual.py`: faster-whisper once in English and once in
-Portuguese, then a timestamp merge — a mixed memo keeps both halves instead
-of collapsing to English) and replies with a synthesized memo that lands as
-a **native iMessage voice bubble** (AAC/m4a). The live gateway uses Plow's
-`send_voice` route:
+(`scripts/stt_bilingual.py`: auto-detect on first contact so a French or
+Portuguese memo is heard as that language; after the pair is set, a
+timestamp merge of native + target so mixed memos keep both halves) and
+replies with a synthesized memo that lands as a **native iMessage voice
+bubble** (AAC/m4a). The live gateway uses Plow's `send_voice` route:
 
 ```
 POST /v1/chats/{chat_uid}/voicememo

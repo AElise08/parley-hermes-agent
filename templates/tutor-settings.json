@@ -1,6 +1,6 @@
 {
-  "timezone": "America/Sao_Paulo",
+  "timezone": "UTC",
   "practice_hour": 18,
   "practice_window_minutes": 10,
-  "locale": "pt"
+  "locale": ""
 }

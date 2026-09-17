@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
-"""Parley bilingual STT: keep both languages in a mixed voice memo.
+"""Parley STT: detect the speaker's language, then keep a mixed pair.
 
 Usage: stt_bilingual.py <input_audio> [output_transcript]
 
-faster-whisper auto-detect picks one language for the whole clip. A memo
-that switches English ↔ Portuguese then decodes as English-only, and the
-Portuguese is gone. This runs the same audio once per language and merges
-by time, keeping whichever pass is more confident *and* looks like that
-language.
+No profile yet: one auto-detect pass (French, Portuguese, English, …) so the
+tutor can ask, in that language, what they want to learn.
 
-Languages come from the tutor profile (native + target), default en+pt.
+After native + target are set: transcribe both and merge by time, so a memo
+that switches mid-clip does not collapse to one language.
 """
 from __future__ import annotations
 
@@ -22,7 +20,6 @@ from dataclasses import dataclass
 sys.path.insert(0, "/opt/data/lazy-packages")
 
 PROFILE = os.environ.get("PARLEY_PROFILE", "/var/lib/hermes/tutor-profile.json")
-DEFAULT_LANGS = ("en", "pt")
 MODEL_NAME = os.environ.get("PARLEY_STT_MODEL", "small")
 
 PT_WORDS = re.compile(
@@ -53,6 +50,7 @@ class Segment:
 
 
 def profile_languages() -> tuple[str, ...]:
+    """Native + target once the owner has a pair. Empty means auto-detect."""
     langs: list[str] = []
     try:
         with open(PROFILE, encoding="utf-8") as handle:
@@ -62,9 +60,6 @@ def profile_languages() -> tuple[str, ...]:
     for key in ("native_language", "target_language"):
         code = str(data.get(key) or "").strip().lower()[:2]
         if code.isalpha() and code not in langs:
-            langs.append(code)
-    for code in DEFAULT_LANGS:
-        if code not in langs:
             langs.append(code)
     return tuple(langs[:3])
 
@@ -132,8 +127,8 @@ def _as_segment(raw: object, lang: str) -> Segment | None:
     return Segment(start, end, text, avg, nospeech, lang)
 
 
-def transcribe_pass(model: object, audio_path: str, lang: str) -> list[Segment]:
-    segments, _info = model.transcribe(
+def transcribe_pass(model: object, audio_path: str, lang: str | None) -> tuple[list[Segment], str]:
+    segments, info = model.transcribe(
         audio_path,
         language=lang,
         beam_size=5,
@@ -141,12 +136,14 @@ def transcribe_pass(model: object, audio_path: str, lang: str) -> list[Segment]:
         vad_filter=True,
         vad_parameters={"min_silence_duration_ms": 400},
     )
+    detected = str(getattr(info, "language", "") or lang or "").strip().lower()[:2]
     out: list[Segment] = []
+    tag = detected or (lang or "und")
     for raw in segments:
-        item = _as_segment(raw, lang)
+        item = _as_segment(raw, tag)
         if item is not None:
             out.append(item)
-    return out
+    return out, detected
 
 
 def load_model(name: str) -> object:
@@ -156,10 +153,24 @@ def load_model(name: str) -> object:
     return WhisperModel(name, device="cpu", compute_type="int8")
 
 
+def format_transcript(text: str, detected: str = "") -> str:
+    body = text.strip()
+    if detected and body:
+        return f"[lang:{detected}] {body}"
+    return body
+
+
 def transcribe_file(audio_path: str, languages: tuple[str, ...] | None = None) -> str:
-    langs = languages or profile_languages()
+    langs = list(languages) if languages is not None else list(profile_languages())
     model = load_model(MODEL_NAME)
-    passes = {lang: transcribe_pass(model, audio_path, lang) for lang in langs}
+    if not langs:
+        segs, detected = transcribe_pass(model, audio_path, None)
+        text = " ".join(s.text.strip() for s in segs if s.text.strip())
+        return format_transcript(text, detected)
+    passes = {}
+    for lang in langs:
+        segs, _detected = transcribe_pass(model, audio_path, lang)
+        passes[lang] = segs
     return merge_segments(passes)
 
 
