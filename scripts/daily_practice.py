@@ -18,12 +18,17 @@ from tutor_config import locale
 SCRIPT = Path(__file__).with_name("tutor.py")
 
 LANG_NAMES = {
-    "en": {"en": "English", "pt": "inglês"},
-    "pt": {"en": "Portuguese", "pt": "português"},
-    "es": {"en": "Spanish", "pt": "espanhol"},
-    "fr": {"en": "French", "pt": "francês"},
-    "de": {"en": "German", "pt": "alemão"},
-    "it": {"en": "Italian", "pt": "italiano"},
+    "en": {"en": "English", "pt": "inglês", "de": "Englisch", "es": "inglés", "fr": "anglais"},
+    "pt": {"en": "Portuguese", "pt": "português", "de": "Portugiesisch", "es": "portugués"},
+    "es": {"en": "Spanish", "pt": "espanhol", "de": "Spanisch", "es": "español"},
+    "fr": {"en": "French", "pt": "francês", "de": "Französisch", "es": "francés"},
+    "de": {"en": "German", "pt": "alemão", "de": "Deutsch", "es": "alemán"},
+    "it": {"en": "Italian", "pt": "italiano", "de": "Italienisch"},
+    "ja": {"en": "Japanese", "pt": "japonês", "de": "Japanisch"},
+    "ko": {"en": "Korean", "pt": "coreano", "de": "Koreanisch"},
+    "zh": {"en": "Chinese", "pt": "chinês", "de": "Chinesisch"},
+    "nl": {"en": "Dutch", "pt": "holandês", "de": "Niederländisch"},
+    "ru": {"en": "Russian", "pt": "russo", "de": "Russisch"},
 }
 
 
@@ -80,7 +85,8 @@ TOPIC_STARTERS = {
 
 
 def main() -> int:
-    text = COPY[locale()]
+    scaffolding = locale()
+    text = COPY.get(scaffolding, COPY["en"])
     proc = subprocess.run(
         [sys.executable, str(SCRIPT), "digest-prompt"],
         capture_output=True,
@@ -113,7 +119,7 @@ def main() -> int:
         lines.append("")
     lines.append(starter)
     lines.append("")
-    lines.append(text["reply_hint"].format(target=lang_name(target, locale())))
+    lines.append(text["reply_hint"].format(target=lang_name(target, scaffolding)))
     message = "\n".join(lines).rstrip()
     send(message)
     print(f"sent {len(message)} chars to plow chat")

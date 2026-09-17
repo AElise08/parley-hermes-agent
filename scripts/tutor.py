@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from send_chat import hermes_home
-from tutor_config import LEVELS, load_settings, timezone_name, zone
+from tutor_config import LEVELS, load_settings, timezone_name, zone, normalize_locale
 
 PROFILE_NAME = "tutor-profile.json"
 STATE_DIR = ".parley"
@@ -81,9 +81,10 @@ def setup_status() -> dict:
         )
     else:
         next_step = (
-            "Ask one line in their language, then wait. PT: Quer praticar qual "
-            "idioma? EN: Which language do you want to practice? Then "
-            "setup-local / profile set with THEIR answer."
+            "Match this message's language (voice: the [lang:xx] tag — en, de, "
+            "es, ja, pt, fr, any Whisper code) and ask in that language which "
+            "one they want to learn. Then setup-local / profile set with THEIR "
+            "answer. Do not assume Portuguese or French."
         )
     return {
         "ready": ready,
@@ -132,7 +133,10 @@ def profile_set(args: argparse.Namespace) -> dict:
         ("goal", args.goal),
     ):
         if value is not None:
-            profile[key] = value.strip()
+            stripped = value.strip()
+            if key in ("target_language", "native_language"):
+                stripped = normalize_locale(stripped) or stripped.lower()[:2]
+            profile[key] = stripped
             changed[key] = profile[key]
     if args.topics is not None:
         topics = [t.strip() for t in args.topics.split(",") if t.strip()]

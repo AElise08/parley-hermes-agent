@@ -3,7 +3,8 @@
 
 Usage: stt_bilingual.py <input_audio> [output_transcript]
 
-No profile yet: one auto-detect pass (French, Portuguese, English, …) so the
+No profile yet: one Whisper auto-detect pass (English, German, Spanish,
+Japanese, Portuguese, French, … — any language the model knows) so the
 tutor can ask, in that language, what they want to learn.
 
 After native + target are set: transcribe both and merge by time, so a memo
@@ -49,6 +50,21 @@ class Segment:
     lang: str
 
 
+def iso_lang(value: object) -> str:
+    """ISO 639-1 (de, en, ja) or a few Whisper extras (yue). Empty if unknown."""
+    raw = str(value or "").strip().lower().replace("_", "-")
+    if not raw:
+        return ""
+    if "-" in raw:
+        raw = raw.split("-", 1)[0]
+    if raw in {"cmn", "zh"}:
+        return "zh"
+    if raw == "yue":
+        return "yue"
+    code = raw[:2]
+    return code if len(code) == 2 and code.isalpha() else ""
+
+
 def profile_languages() -> tuple[str, ...]:
     """Native + target once the owner has a pair. Empty means auto-detect."""
     langs: list[str] = []
@@ -58,8 +74,8 @@ def profile_languages() -> tuple[str, ...]:
     except (OSError, ValueError):
         data = {}
     for key in ("native_language", "target_language"):
-        code = str(data.get(key) or "").strip().lower()[:2]
-        if code.isalpha() and code not in langs:
+        code = iso_lang(data.get(key))
+        if code and code not in langs:
             langs.append(code)
     return tuple(langs[:3])
 
@@ -136,7 +152,7 @@ def transcribe_pass(model: object, audio_path: str, lang: str | None) -> tuple[l
         vad_filter=True,
         vad_parameters={"min_silence_duration_ms": 400},
     )
-    detected = str(getattr(info, "language", "") or lang or "").strip().lower()[:2]
+    detected = iso_lang(getattr(info, "language", "") or lang or "")
     out: list[Segment] = []
     tag = detected or (lang or "und")
     for raw in segments:

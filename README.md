@@ -175,8 +175,9 @@ MIT. See [LICENSE](LICENSE). Built on the same architecture as
 ## Voice (native iMessage)
 
 Voice memos are live. You send a memo; Parley transcribes it locally
-(`scripts/stt_bilingual.py`: auto-detect on first contact so a French or
-Portuguese memo is heard as that language; after the pair is set, a
+(`scripts/stt_bilingual.py`: auto-detect on first contact so an English,
+German, Japanese, Portuguese, or French memo is heard as that language;
+after the pair is set, a
 timestamp merge of native + target so mixed memos keep both halves) and
 replies with a synthesized memo that lands as a **native iMessage voice
 bubble** (AAC/m4a). The live gateway uses Plow's `send_voice` route:
@@ -190,10 +191,9 @@ Same declare/upload flow as media, then that POST — MP3 or M4A, one file, no
 body text. Outbox scripts use `send_chat.py --voice file.m4a`.
 
 `scripts/tts_bilingual.py` picks the voice by the language being practiced
-(the profile's `target_language`) — `pt-BR-ThalitaMultilingualNeural` for
-Portuguese, `en-US-AvaMultilingualNeural` for English. Both are Microsoft
-multilingual neural voices, so embedded phrases in the other language keep
-native pronunciation. Voices are one-line changes at the top of the script.
+(the profile's `target_language`) — English, German, Spanish, Japanese,
+Portuguese, French, and other ISO codes mapped at the top of the script.
+Unknown codes fall back to Ava multilingual.
 
 This is baked into the image (bilingual STT, `voice.auto_tts`, bilingual
 TTS, `TMPDIR` inside the Hermes write root). The LLM is whatever the owner

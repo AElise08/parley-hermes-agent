@@ -31,7 +31,8 @@ class SetupTests(TempHome):
     def test_empty_home_is_not_ready(self):
         status = tutor.setup_status()
         self.assertFalse(status["ready"])
-        self.assertIn("Quer praticar qual idioma?", status["next"])
+        self.assertIn("any Whisper code", status["next"])
+        self.assertNotIn("Quer praticar qual idioma?", status["next"])
 
     def test_image_template_starts_empty(self):
         profile = json.loads((ROOT / "templates" / "tutor-profile.json").read_text())
@@ -55,6 +56,13 @@ class SetupTests(TempHome):
         self.assertTrue(status["ready"])
         self.assertEqual(status["level"], "B1")
         self.assertEqual(status["topics"], ["writing", "faith", "tech"])
+
+    def test_profile_set_normalizes_language_names(self):
+        tutor.setup_local()
+        tutor.profile_set(Namespace(target="German", native="english", goal="", topics=None, level=None))
+        status = tutor.setup_status()
+        self.assertEqual(status["target_language"], "de")
+        self.assertEqual(status["native_language"], "en")
 
     def test_level_set_records_history_and_rejects_bad_level(self):
         tutor.setup_local()
@@ -195,7 +203,11 @@ class SettingsTests(TempHome):
         self.assertEqual(tutor_config.practice_hour({"practice_hour": 99}), 18)
         self.assertEqual(tutor_config.timezone_name({"timezone": "Not/AZone"}), "UTC")
         with self.assertRaises(ValueError):
-            tutor_config.set_locale("fr")
+            tutor_config.set_locale("not-a-language")
+        tutor_config.set_locale("de")
+        self.assertEqual(tutor_config.locale(tutor_config.load_settings()), "de")
+        tutor_config.set_locale("french")
+        self.assertEqual(tutor_config.load_settings()["locale"], "fr")
 
 
 class StatsTests(TempHome):

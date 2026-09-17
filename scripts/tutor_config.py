@@ -68,14 +68,30 @@ def practice_window_minutes(data: dict | None = None) -> int:
     return value if 1 <= value <= 59 else 10
 
 
+LOCALE_ALIASES = {
+    "english": "en", "german": "de", "deutsch": "de", "portuguese": "pt",
+    "portugues": "pt", "português": "pt", "french": "fr", "francais": "fr",
+    "français": "fr", "spanish": "es", "espanol": "es", "español": "es",
+    "italian": "it", "italiano": "it", "japanese": "ja", "korean": "ko",
+    "chinese": "zh", "mandarin": "zh", "dutch": "nl", "russian": "ru",
+    "arabic": "ar", "hindi": "hi", "swedish": "sv", "turkish": "tr",
+    "polish": "pl", "ukrainian": "uk",
+}
+
+
 def normalize_locale(value: str | None) -> str | None:
-    raw = str(value or "").strip().lower()
+    """ISO 639-1 (en, de, ja, …) or a common language name. Not just pt/en."""
+    raw = str(value or "").strip().lower().replace("_", "-")
     if not raw:
         return None
-    if raw.startswith("pt"):
-        return "pt"
-    if raw.startswith("en"):
-        return "en"
+    if raw in LOCALE_ALIASES:
+        return LOCALE_ALIASES[raw]
+    if "-" in raw:
+        raw = raw.split("-", 1)[0]
+    if raw in {"cmn", "zh"}:
+        return "zh"
+    if len(raw) == 2 and raw.isalpha():
+        return raw
     return None
 
 
@@ -97,7 +113,7 @@ def write_settings(updates: dict) -> dict:
 def set_locale(value: str) -> dict:
     loc = normalize_locale(value)
     if loc is None:
-        raise ValueError("locale must be pt or en")
+        raise ValueError("locale must be an ISO language code (en, de, pt, ja, …)")
     return write_settings({"locale": loc})
 
 
@@ -106,7 +122,7 @@ def main() -> int:
 
     parser = argparse.ArgumentParser(description="Read or write this owner's Parley settings.")
     sub = parser.add_subparsers(dest="command", required=True)
-    sl = sub.add_parser("set-locale", help="pt or en — the owner's native language, for scaffolding")
+    sl = sub.add_parser("set-locale", help="ISO code (en, de, pt, ja, …) — native language, for scaffolding")
     sl.add_argument("locale")
     sub.add_parser("show", help="Print timezone, practice hour, and locale")
     args = parser.parse_args()

@@ -10,11 +10,8 @@ explanation is English, and vice versa. Both voices are Microsoft
 *Multilingual* neural voices, which read the other language's phrases with
 native pronunciation, so one voice covers a mixed reply correctly.
 
-pt -> pt-BR-ThalitaMultilingualNeural (native PT, embedded EN kept native)
-en -> en-US-AvaMultilingualNeural    (native EN, embedded PT kept native)
-
-Falls back to the dominant reply language when the profile names a language
-without a configured voice.
+Voices are keyed by ISO code (`en`, `de`, `ja`, `pt`, `fr`, …). Unknown
+codes fall back to Ava multilingual, which can speak many languages.
 """
 import json
 import os
@@ -25,8 +22,22 @@ sys.path.insert(0, "/opt/data/lazy-packages")
 
 PROFILE = os.environ.get("PARLEY_PROFILE", "/var/lib/hermes/tutor-profile.json")
 VOICES = {
-    "pt": "pt-BR-ThalitaMultilingualNeural",
     "en": "en-US-AvaMultilingualNeural",
+    "pt": "pt-BR-ThalitaMultilingualNeural",
+    "de": "de-DE-SeraphinaMultilingualNeural",
+    "fr": "fr-FR-VivienneMultilingualNeural",
+    "es": "es-ES-ArabellaMultilingualNeural",
+    "it": "it-IT-IsabellaNeural",
+    "ja": "ja-JP-NanamiNeural",
+    "ko": "ko-KR-SunHiNeural",
+    "zh": "zh-CN-XiaoxiaoMultilingualNeural",
+    "nl": "nl-NL-FennaNeural",
+    "pl": "pl-PL-ZofiaNeural",
+    "ru": "ru-RU-SvetlanaNeural",
+    "ar": "ar-SA-ZariyahNeural",
+    "hi": "hi-IN-SwaraNeural",
+    "sv": "sv-SE-SofieNeural",
+    "tr": "tr-TR-EmelNeural",
 }
 
 PT_WORDS = re.compile(
@@ -57,6 +68,11 @@ def choose_voice(text: str) -> tuple[str, str]:
     target = target_language()
     if target in VOICES:
         return VOICES[target], target
+    if target:
+        code = target[:2]
+        if code in VOICES:
+            return VOICES[code], code
+        return VOICES["en"], code
     lang = dominant_language(text)
     return VOICES.get(lang, VOICES["en"]), lang
 

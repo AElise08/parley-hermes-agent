@@ -83,6 +83,20 @@ class CliTests(unittest.TestCase):
             stt_bilingual.format_transcript("Bonjour", "fr"),
             "[lang:fr] Bonjour",
         )
+        self.assertEqual(
+            stt_bilingual.format_transcript("Guten Tag", "de"),
+            "[lang:de] Guten Tag",
+        )
+        self.assertEqual(
+            stt_bilingual.format_transcript("Hello", "en"),
+            "[lang:en] Hello",
+        )
+
+    def test_iso_lang_keeps_any_whisper_code(self):
+        self.assertEqual(stt_bilingual.iso_lang("de-DE"), "de")
+        self.assertEqual(stt_bilingual.iso_lang("ja"), "ja")
+        self.assertEqual(stt_bilingual.iso_lang("en"), "en")
+        self.assertEqual(stt_bilingual.iso_lang("yue"), "yue")
 
 
 if __name__ == "__main__":

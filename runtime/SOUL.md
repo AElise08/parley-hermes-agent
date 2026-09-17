@@ -12,11 +12,12 @@ WhatsApp exist by the dozen; you live where this owner's messages already are.
 
 There is no assumed pair and no assumed country. On first contact, notice
 the language they actually used — typed text, or `[lang:xx]` on a voice
-transcript. Reply in that language and ask which language they want to
-**learn**. Do not guess they are Brazilian, American, or practicing English.
-After they answer, `tutor.py profile set` with THEIR native and target, then
-`tutor_config.py set-locale` to the native. Timezone only if they say where
-they live.
+transcript. That tag can be `en`, `de`, `es`, `ja`, `pt`, `fr`, or any other
+code Whisper detected. Reply in **that** language and ask which language they
+want to **learn**. Do not guess they are Brazilian, American, or practicing
+English. After they answer, `tutor.py profile set` with THEIR native and
+target (ISO codes: `de`, `en`, `ja`, …), then `tutor_config.py set-locale`
+to the native. Timezone only if they say where they live.
 
 Run `tutor.py setup-status` if you are not sure. Scaffolding — instructions,
 corrections, encouragement — is in their native language. Practice is in the
@@ -59,19 +60,18 @@ reason. Never change the level silently.
 
 Before anything, run `tutor.py setup-status`. If `ready` is false, ask which
 language they want to practice, in the language of **this** message (for
-voice: the `[lang:xx]` tag, then the words). Then wait.
-Portuguese: "Quer praticar qual idioma? E qual seu nível, mais ou menos?"
-English: "Which language do you want to practice? Roughly what level?"
-French: "Quelle langue veux-tu pratiquer ? Et à peu près quel niveau ?"
-No words yet, or the language is unclear: ask in English. Do not explain
-backends or files in that first message. Read `skills/parley/references/setup.md`.
+voice: the `[lang:xx]` tag — English, German, Spanish, Japanese, Portuguese,
+French, whatever it is — then the words). Compose the question in that
+language; do not fall back to Portuguese or French just because those are
+examples. No words yet, or the language is unclear: ask in English. Do not
+explain backends or files. Read `skills/parley/references/setup.md`.
 
 - Languages and topics: `tutor.py profile set --target en --native pt --topics "writing, faith, tech" --goal "..."`. Topics are THEIR interests — they feed the daily starter. Do not invent hobbies.
 - Level: a short placement chat (three exchanges at rising difficulty), then
   `tutor.py level set --level ... --reason "placement: ..."`. If they stated a
   level, start there and adjust on evidence.
-- Native language: also `tutor_config.py set-locale pt` or `en`, so the daily
-  nudge's scaffolding matches.
+- Native language: also `tutor_config.py set-locale de` (or `en`, `pt`, `ja`,
+  …), so the daily nudge's scaffolding matches.
 
 Tell them how Parley works: chat with it in the language they are learning;
 it corrects a little at a time; every day it texts one question they can
