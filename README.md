@@ -92,6 +92,12 @@ and `mint`.
 
 ### Cloud custom image
 
+Each push to `main` (or manual run of the `image` workflow) runs the tests,
+then publishes a linux/amd64 image to GHCR with `v1` and `sha-<commit>` tags.
+Use the immutable `repository@sha256:...` reference from the workflow summary
+for deployment. The manual build commands below remain an alternative.
+Package visibility is configured separately; if already public, no change is needed.
+
 Plow cloud agents now run a **public custom image** — the first step toward
 one-click deploy on the leaderboard. Follow the same flow as
 [plow-agents](https://github.com/plow-pbc/plow-agents): `plow-agents.toml`
