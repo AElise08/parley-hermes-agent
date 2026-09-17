@@ -1,8 +1,14 @@
 {
-  "target_language": "",
-  "native_language": "",
-  "level": "",
-  "level_history": [],
-  "goal": "",
-  "topics": []
+  "target_language": "en",
+  "native_language": "pt",
+  "level": "B1",
+  "level_history": [
+    {
+      "from": "",
+      "to": "B1",
+      "reason": "default one-click profile: Portuguese speaker practicing English"
+    }
+  ],
+  "goal": "falar inglês no dia a dia, com correções leves no iMessage",
+  "topics": ["daily life", "work", "travel"]
 }

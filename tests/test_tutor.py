@@ -33,6 +33,15 @@ class SetupTests(TempHome):
         self.assertFalse(status["ready"])
         self.assertIn("Quer praticar qual idioma?", status["next"])
 
+    def test_image_template_is_ready_for_one_click(self):
+        profile = json.loads((ROOT / "templates" / "tutor-profile.json").read_text())
+        settings = json.loads((ROOT / "templates" / "tutor-settings.json").read_text())
+        self.assertEqual(profile["target_language"], "en")
+        self.assertEqual(profile["native_language"], "pt")
+        self.assertEqual(profile["level"], "B1")
+        self.assertEqual(settings["locale"], "pt")
+        self.assertEqual(settings["timezone"], "America/Sao_Paulo")
+
     def test_setup_local_then_profile_then_ready(self):
         self.assertTrue(tutor.setup_local()["ok"])
         self.assertFalse(tutor.setup_status()["ready"])
