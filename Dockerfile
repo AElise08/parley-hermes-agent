@@ -3,7 +3,7 @@
 #
 # Pinned by digest, same pattern as plow-pbc/life-assistant-hermes-agent:
 # a moving tag would substitute unreviewed code under a live credential.
-FROM public.ecr.aws/e1h7x4a2/plow-cloud-agents:base-910b8e3ba8980e20faae9f37dcaca0ea9d8bd9ae@sha256:f4739b6e74309dcccd087792949fd613191db7f33d33109c78127684dcb5dd73
+FROM public.ecr.aws/e1h7x4a2/plow-cloud-agents:base-51f83158a70a383f03a4d03dbd8b6ea102cf0361@sha256:253d7ed3409effa7fa59113d93b4b79bb731d8264cdaf4cd60294924d0110a2e
 
 COPY runtime/SOUL.md /var/lib/hermes/SOUL.md
 COPY LICENSE NOTICE /usr/share/doc/parley/
