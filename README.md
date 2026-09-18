@@ -162,7 +162,7 @@ Your profile, sessions, and mistakes log live in the agent home volume
 ## Usage reporting
 
 This image reports token usage to the [Agent Index](https://aiworthusing.com/agent-index)
-once an hour: day × model counts, nothing else. The listing page (name, repo,
+every 5 minutes: day × model counts, nothing else. The listing page (name, repo,
 video) is **not** published by this boot — that is a separate step.
 
 `AGENT_ID` defaults to `parley`.
