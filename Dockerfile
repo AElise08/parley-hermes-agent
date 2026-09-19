@@ -3,7 +3,7 @@
 #
 # Pinned by digest, same pattern as plow-pbc/life-assistant-hermes-agent:
 # a moving tag would substitute unreviewed code under a live credential.
-FROM public.ecr.aws/e1h7x4a2/plow-cloud-agents:base-51f83158a70a383f03a4d03dbd8b6ea102cf0361@sha256:253d7ed3409effa7fa59113d93b4b79bb731d8264cdaf4cd60294924d0110a2e
+FROM public.ecr.aws/e1h7x4a2/plow-cloud-agents:base-ef0019372ff8bca593611b31ebd2e08f9f1458ff@sha256:a8a2f97ad78b8192d80a984dce81d3bf5a9a883d18cb7b677704913a09b56aee
 
 COPY runtime/SOUL.md /var/lib/hermes/SOUL.md
 COPY LICENSE NOTICE /usr/share/doc/parley/
@@ -25,19 +25,6 @@ RUN chown -R root:root /opt/parley \
  && find /opt/parley -type d -exec chmod 0755 {} + \
  && find /opt/parley -type f -exec chmod 0644 {} + \
  && chmod 0755 /opt/parley/scripts/*.py
-
-# Agent Index usage reporter, fetched from the commit vendor/client.pin names
-# and checked against the hash beside it. Same pin as life-assistant.
-COPY vendor/client.pin /opt/plow/agent-index-client.pin
-RUN set -eu; \
-    sha="$(sed -n 's/^sha=//p' /opt/plow/agent-index-client.pin)"; \
-    want="$(sed -n 's/^sha256=//p' /opt/plow/agent-index-client.pin)"; \
-    path="$(sed -n 's/^path=//p' /opt/plow/agent-index-client.pin)"; \
-    curl -fsS --max-time 60 -o /opt/plow/agent-index-client.py \
-      "https://raw.githubusercontent.com/plow-pbc/agent-index-client/${sha}/${path}"; \
-    got="$(sha256sum /opt/plow/agent-index-client.py | cut -d' ' -f1)"; \
-    [ "$got" = "$want" ] || { echo "agent-index client is $got, pin says $want" >&2; exit 1; }; \
-    chmod 0644 /opt/plow/agent-index-client.py
 
 COPY image/s6-overlay/ /etc/s6-overlay/
 COPY image/cont-init.d/20-parley-seed /etc/cont-init.d/20-parley-seed
